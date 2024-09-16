@@ -11,6 +11,10 @@
     <!-- Google Fonts (Inter) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
     <style>
         body.light-mode {
             background-color: #f7f7f7;
@@ -136,6 +140,22 @@
             background-color: #2b2b2b;
             color: #e0e0e0;
         }
+
+        /* Leaderboard Styling */
+        #leaderboard {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        #leaderboard ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        #leaderboard li {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
     </style>
 </head>
 <body class="dark-mode"> <!-- Starts in dark mode by default -->
@@ -154,6 +174,12 @@
         <div id="timer">Time Left: 5s</div>
         <div id="gameOver">Game Over!</div>
 
+        <!-- Leaderboard -->
+        <div id="leaderboard">
+            <h3>Leaderboard</h3>
+            <ul id="highScoresList"></ul>
+        </div>
+
         <!-- Rules Section -->
         <div id="rules">
             <h3>Rules for the "Mail-In Ballot Blitz"</h3>
@@ -171,45 +197,67 @@
     </div>
 
     <script>
-        // Countdown function
-        function updateCountdown() {
-            const eventDate = new Date("November 5, 2024 20:00:00 GMT-0600"); // Central Time
-            const now = new Date();
-            const timeRemaining = eventDate - now;
+        // Import Firebase config and initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3WF6LLlZfT_uJpfGtmKUmiYXGE9QnAnw",
+            authDomain: "ballotchase-ef4d9.firebaseapp.com",
+            projectId: "ballotchase-ef4d9",
+            storageBucket: "ballotchase-ef4d9.appspot.com",
+            messagingSenderId: "1073466108439",
+            appId: "1:1073466108439:web:0c1f17cb96fdc539650a52"
+        };
 
-            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-            document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        // Submit High Score to Firebase
+        function submitHighScore(name, score) {
+            const scoreRef = db.ref('leaderboard/').push();
+            scoreRef.set({
+                name: name,
+                score: score
+            });
+        }
 
-            if (timeRemaining < 0) {
-                clearInterval(countdownInterval);
-                document.getElementById("countdown").innerHTML = "Election Day is here!";
+        // Retrieve and Display High Scores
+        function loadHighScores() {
+            const scoresRef = db.ref('leaderboard/').orderByChild('score').limitToLast(10);
+            scoresRef.on('value', (snapshot) => {
+                const highScores = snapshot.val();
+                const highScoresList = document.getElementById('highScoresList');
+                highScoresList.innerHTML = ''; // Clear the list
+                const scoresArray = Object.values(highScores || {}).sort((a, b) => b.score - a.score);
+                scoresArray.forEach(scoreEntry => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${scoreEntry.name}: ${scoreEntry.score}`;
+                    highScoresList.appendChild(listItem);
+                });
+            });
+        }
+
+        // Load high scores when the page loads
+        window.onload = function() {
+            loadHighScores();
+        }
+
+        // Game logic...
+        // At the end of the game, submit the score like this:
+        function gameOver() {
+            clearInterval(gameInterval);
+            clearInterval(countdownTimer);
+            ballot.style.display = 'none';
+            gameOverDisplay.style.display = 'block';
+            startGameButton.disabled = false;
+
+            // Prompt the player for their name and submit the score
+            const playerName = prompt("Game Over! Enter your name for the leaderboard:");
+            if (playerName) {
+                submitHighScore(playerName, caught);  // caught is the player's score
             }
         }
 
-        // Update the countdown every second
-        const countdownInterval = setInterval(updateCountdown, 1000);
-
-        // Dark mode toggle
-        const toggleModeButton = document.getElementById("toggleMode");
-        toggleModeButton.addEventListener("click", function () {
-            const body = document.body;
-            if (body.classList.contains("light-mode")) {
-                body.classList.remove("light-mode");
-                body.classList.add("dark-mode");
-                toggleModeButton.textContent = 'Toggle Light Mode';
-            } else {
-                body.classList.remove("dark-mode");
-                body.classList.add("light-mode");
-                toggleModeButton.textContent = 'Toggle Dark Mode';
-            }
-        });
-
-        // Game logic...
-        // The rest of your game logic stays the same here...
+        // Countdown function and other game logic...
     </script>
 
     <!-- Bootstrap 5 JS (Local) -->
