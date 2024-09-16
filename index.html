@@ -72,11 +72,11 @@
         }
     </style>
 </head>
-<body class="light-mode">
+<body class="dark-mode"> <!-- Starts in dark mode by default -->
     <div class="container text-center">
         <h1>Countdown to Election Day: November 5, 2024, 8:00 PM (Central Time)</h1>
         <div id="countdown"></div>
-        <button id="toggleMode" class="btn btn-toggle mt-3">Toggle Dark Mode</button>
+        <button id="toggleMode" class="btn btn-toggle mt-3">Toggle Light Mode</button>
     </div>
 
     <script>
@@ -109,9 +109,11 @@
             if (body.classList.contains("light-mode")) {
                 body.classList.remove("light-mode");
                 body.classList.add("dark-mode");
+                toggleModeButton.textContent = 'Toggle Light Mode';
             } else {
                 body.classList.remove("dark-mode");
                 body.classList.add("light-mode");
+                toggleModeButton.textContent = 'Toggle Dark Mode';
             }
         });
     </script>
