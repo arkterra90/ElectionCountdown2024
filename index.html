@@ -6,7 +6,7 @@
     <title>Election Countdown: Nov 5</title>
 
     <!-- Bootstrap 5 CSS (Local) -->
-    <link href="./bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Google Fonts (Inter) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
@@ -198,7 +198,7 @@
     </div>
 
     <script>
-        // Initialize Firebase
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA3WF6LLlZfT_uJpfGtmKUmiYXGE9QnAnw",
             authDomain: "ballotchase-ef4d9.firebaseapp.com",
@@ -208,6 +208,7 @@
             appId: "1:1073466108439:web:0c1f17cb96fdc539650a52"
         };
 
+        // Initialize Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -241,7 +242,29 @@
             loadHighScores();
         }
 
-        // Game logic
+        // Countdown Timer
+        function updateCountdown() {
+            const eventDate = new Date("November 5, 2024 20:00:00 GMT-0600"); // Central Time
+            const now = new Date();
+            const timeRemaining = eventDate - now;
+
+            if (timeRemaining < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById("countdown").innerHTML = "Election Day is here!";
+                return;
+            }
+
+            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+
+            document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        const countdownInterval = setInterval(updateCountdown, 1000);
+
+        // Game Variables
         let lives = 3;
         let caught = 0;
         let timeLeft = 5;
@@ -260,7 +283,7 @@
 
         let containerWidth, containerHeight, ballotX, ballotY;
 
-        // Set initial ballot position
+        // Initialize Ballot Position
         function initializeBallotPosition() {
             containerWidth = gameContainer.offsetWidth;
             containerHeight = gameContainer.offsetHeight;
@@ -268,28 +291,7 @@
             ballotY = Math.random() * (containerHeight - ballot.offsetHeight);
         }
 
-        // Countdown to Election Day
-        function updateCountdown() {
-            const eventDate = new Date("November 5, 2024 20:00:00 GMT-0600"); // Central Time
-            const now = new Date();
-            const timeRemaining = eventDate - now;
-
-            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-
-            document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-            if (timeRemaining < 0) {
-                clearInterval(countdownInterval);
-                document.getElementById("countdown").innerHTML = "Election Day is here!";
-            }
-        }
-
-        const countdownInterval = setInterval(updateCountdown, 1000);
-
-        // Start the game
+        // Start Game
         function startGame() {
             lives = 3;
             caught = 0;
@@ -304,14 +306,13 @@
             gameOverDisplay.style.display = 'none';
 
             ballot.style.display = 'block';
-            ballot.classList.remove('explosion');
             moveBallot();
             startCountdown();
 
             startGameButton.disabled = true;
         }
 
-        // Move the ballot
+        // Move Ballot
         function moveBallot() {
             gameInterval = setInterval(function () {
                 ballotX += xVelocity;
@@ -329,7 +330,7 @@
             }, 20);
         }
 
-        // Timer countdown
+        // Start Countdown for Ballot Catching
         function startCountdown() {
             clearInterval(countdownTimer);
             countdownTimer = setInterval(function () {
@@ -343,7 +344,7 @@
             }, 1000);
         }
 
-        // Ballot click event
+        // Ballot Click Event
         ballot.addEventListener('click', function () {
             caught++;
             timeLeft = Math.max(3, timeLeft - 0.5); // Decrease the time
@@ -353,14 +354,10 @@
             caughtDisplay.innerText = `Caught: ${caught}`;
             timerDisplay.innerText = `Time Left: ${timeLeft}s`;
 
-            ballot.classList.add('explosion');
-            setTimeout(function () {
-                ballot.classList.remove('explosion');
-                resetBallot();
-            }, 500);
+            resetBallot();
         });
 
-        // Reset ballot position
+        // Reset Ballot Position
         function resetBallot() {
             clearInterval(countdownTimer);
             clearInterval(gameInterval);
@@ -369,7 +366,7 @@
             startCountdown();
         }
 
-        // Lose life
+        // Lose Life
         function loseLife() {
             lives--;
             livesDisplay.innerText = `Lives: ${lives}`;
@@ -380,7 +377,7 @@
             }
         }
 
-        // Game over
+        // Game Over
         function gameOver() {
             clearInterval(gameInterval);
             clearInterval(countdownTimer);
@@ -388,19 +385,33 @@
             gameOverDisplay.style.display = 'block';
             startGameButton.disabled = false;
 
-            // Submit score
+            // Submit Score
             const playerName = prompt("Game Over! Enter your name for the leaderboard:");
             if (playerName) {
                 submitHighScore(playerName, caught);
             }
         }
 
-        // Start game button click handler
+        // Start Game Button Click Handler
         startGameButton.addEventListener('click', startGame);
 
+        // Toggle Dark/Light Mode
+        const toggleModeButton = document.getElementById("toggleMode");
+        toggleModeButton.addEventListener("click", function () {
+            const body = document.body;
+            if (body.classList.contains("light-mode")) {
+                body.classList.remove("light-mode");
+                body.classList.add("dark-mode");
+                toggleModeButton.textContent = 'Toggle Light Mode';
+            } else {
+                body.classList.remove("dark-mode");
+                body.classList.add("light-mode");
+                toggleModeButton.textContent = 'Toggle Dark Mode';
+            }
+        });
     </script>
 
     <!-- Bootstrap 5 JS (Local) -->
-    <script src="./bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
