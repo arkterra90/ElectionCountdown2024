@@ -126,7 +126,7 @@
     </div>
 
     <script>
-        // Countdown function
+        // Countdown function for Election Day
         function updateCountdown() {
             const eventDate = new Date("November 5, 2024 20:00:00 GMT-0600"); // Central Time
             const now = new Date();
@@ -169,6 +169,8 @@
         let timeLeft = 5; // Initial countdown time
         let xVelocity = 3;
         let yVelocity = 2;
+        let gameInterval;
+        let countdownTimer;
 
         const ballot = document.getElementById('ballot');
         const livesDisplay = document.getElementById('lives');
@@ -178,21 +180,23 @@
         const startGameButton = document.getElementById('startGame');
         const gameContainer = document.querySelector('.game-container');
 
-        const containerWidth = gameContainer.offsetWidth;
-        const containerHeight = gameContainer.offsetHeight;
+        let containerWidth, containerHeight, ballotX, ballotY;
 
-        let ballotX = Math.random() * (containerWidth - ballot.offsetWidth);
-        let ballotY = Math.random() * (containerHeight - ballot.offsetHeight);
+        function initializeBallotPosition() {
+            containerWidth = gameContainer.offsetWidth;
+            containerHeight = gameContainer.offsetHeight;
+            ballotX = Math.random() * (containerWidth - ballot.offsetWidth);
+            ballotY = Math.random() * (containerHeight - ballot.offsetHeight);
+        }
 
-        let gameInterval;
-        let countdownInterval;
-
+        // Game start
         function startGame() {
             lives = 3;
             caught = 0;
             timeLeft = 5;
             xVelocity = 3;
             yVelocity = 2;
+            initializeBallotPosition();
 
             livesDisplay.innerText = `Lives: ${lives}`;
             caughtDisplay.innerText = `Caught: ${caught}`;
@@ -207,6 +211,7 @@
             startGameButton.disabled = true;
         }
 
+        // Move the ballot around within the game container
         function moveBallot() {
             gameInterval = setInterval(function () {
                 ballotX += xVelocity;
@@ -224,22 +229,24 @@
             }, 20);
         }
 
+        // Timer countdown for the current ballot
         function startCountdown() {
-            countdownInterval = setInterval(function () {
+            clearInterval(countdownTimer);
+            countdownTimer = setInterval(function () {
                 timeLeft--;
                 timerDisplay.innerText = `Time Left: ${timeLeft}s`;
 
                 if (timeLeft === 0) {
-                    clearInterval(countdownInterval);
-                    clearInterval(gameInterval);
+                    clearInterval(countdownTimer);
                     loseLife();
                 }
             }, 1000);
         }
 
+        // Ballot click event
         ballot.addEventListener('click', function () {
             caught++;
-            timeLeft = Math.max(3, timeLeft - 0.5); // Decrease the time, but not below 3 seconds
+            timeLeft = Math.max(3, timeLeft - 0.5); // Decrease time, but not below 3 seconds
             xVelocity *= 1.1;
             yVelocity *= 1.1;
 
@@ -254,15 +261,16 @@
             }, 500);
         });
 
+        // Reset the ballot to a new random position
         function resetBallot() {
-            clearInterval(countdownInterval);
+            clearInterval(countdownTimer);
             clearInterval(gameInterval);
-            ballotX = Math.random() * (containerWidth - ballot.offsetWidth);
-            ballotY = Math.random() * (containerHeight - ballot.offsetHeight);
+            initializeBallotPosition();
             moveBallot();
             startCountdown();
         }
 
+        // Lose a life
         function loseLife() {
             lives--;
             livesDisplay.innerText = `Lives: ${lives}`;
@@ -273,9 +281,10 @@
             }
         }
 
+        // End the game
         function gameOver() {
             clearInterval(gameInterval);
-            clearInterval(countdownInterval);
+            clearInterval(countdownTimer);
             ballot.style.display = 'none';
             gameOverDisplay.style.display = 'block';
             startGameButton.disabled = false;
@@ -283,6 +292,7 @@
 
         // Start game button click handler
         startGameButton.addEventListener('click', startGame);
+
     </script>
 
     <!-- Bootstrap 5 JS (Local) -->
