@@ -12,7 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* General Styling */
         body.light-mode {
             background-color: #f7f7f7;
             color: #333;
@@ -26,29 +25,25 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Container Styling */
         .container {
             margin-top: 50px;
             padding: 20px;
         }
 
-        /* Heading */
         h1 {
             font-size: 2rem;
             font-weight: 600;
             margin-bottom: 30px;
         }
 
-        /* Countdown Styling */
         #countdown {
             font-size: 2.5rem;
             font-weight: 600;
-            color: #004085; /* Dark Blue Accent */
+            color: #004085;
             margin-bottom: 20px;
             transition: color 0.3s;
         }
 
-        /* Button Styling */
         .btn-toggle {
             padding: 8px 20px;
             font-size: 1rem;
@@ -64,14 +59,32 @@
             background-color: #555;
         }
 
-        /* Dark Mode Accent */
         .dark-mode #countdown {
-            color: #b22222; /* Dark Red Accent */
+            color: #b22222;
         }
 
-        /* Minimalist Look */
-        h1, #countdown {
-            margin: 0 auto;
+        /* Game Styling */
+        #ballot {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 100px;
+            height: 50px;
+            background-color: #FFD700;
+            border: 2px solid black;
+            cursor: pointer;
+            display: none;
+        }
+
+        #lives {
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+
+        #gameOver {
+            font-size: 2rem;
+            color: red;
+            display: none;
         }
     </style>
 </head>
@@ -80,6 +93,11 @@
         <h1>Countdown to Election Day: November 5, 2024, 8:00 PM (Central Time)</h1>
         <div id="countdown"></div>
         <button id="toggleMode" class="btn btn-toggle mt-3">Toggle Light Mode</button>
+
+        <!-- Game Elements -->
+        <div id="ballot">Mail-in Ballot</div>
+        <div id="lives">Lives: 3</div>
+        <div id="gameOver">Game Over!</div>
     </div>
 
     <script>
@@ -119,6 +137,60 @@
                 toggleModeButton.textContent = 'Toggle Dark Mode';
             }
         });
+
+        // Game logic
+        let lives = 3;
+        let speed = 3000;
+        let ballot = document.getElementById('ballot');
+        let livesDisplay = document.getElementById('lives');
+        let gameOverDisplay = document.getElementById('gameOver');
+
+        function startGame() {
+            lives = 3;
+            speed = 3000;
+            livesDisplay.innerText = `Lives: ${lives}`;
+            gameOverDisplay.style.display = 'none';
+            moveBallot();
+        }
+
+        function moveBallot() {
+            ballot.style.display = 'block';
+            let startPosition = 0;
+            const endPosition = window.innerWidth - ballot.offsetWidth;
+            let ballotInterval = setInterval(function() {
+                startPosition += 5;
+                ballot.style.left = startPosition + 'px';
+
+                if (startPosition >= endPosition) {
+                    clearInterval(ballotInterval);
+                    loseLife();
+                }
+            }, speed / 100);
+        }
+
+        ballot.addEventListener('click', function() {
+            ballot.style.display = 'none';
+            speed *= 0.9; // Increase speed by 10%
+            setTimeout(moveBallot, 1000);
+        });
+
+        function loseLife() {
+            lives--;
+            if (lives === 0) {
+                gameOver();
+            } else {
+                livesDisplay.innerText = `Lives: ${lives}`;
+                setTimeout(moveBallot, 1000);
+            }
+        }
+
+        function gameOver() {
+            ballot.style.display = 'none';
+            gameOverDisplay.style.display = 'block';
+        }
+
+        // Start game when the page loads
+        window.onload = startGame;
     </script>
 
     <!-- Bootstrap 5 JS (Local) -->
