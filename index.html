@@ -6,14 +6,10 @@
     <title>Election Countdown: Nov 5</title>
 
     <!-- Bootstrap 5 CSS (Local) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./bootstrap.min.css" rel="stylesheet">
 
     <!-- Google Fonts (Inter) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
     <style>
         body.light-mode {
@@ -48,7 +44,7 @@
             transition: color 0.3s;
         }
 
-        .btn-toggle, .btn-start {
+        .btn-toggle {
             padding: 8px 20px;
             font-size: 1rem;
             font-weight: 400;
@@ -59,7 +55,7 @@
             transition: background-color 0.3s;
         }
 
-        .btn-toggle:hover, .btn-start:hover {
+        .btn-toggle:hover {
             background-color: #555;
         }
 
@@ -70,14 +66,20 @@
         /* Game Styling */
         #ballot {
             position: absolute;
-            width: 150px;
-            height: 75px;
+            width: 100px;
+            height: 50px;
+            background-color: #FFD700;
             border: 2px solid black;
             cursor: pointer;
             display: none;
         }
 
-        #lives, #caughtCount, #timer {
+        #lives {
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+
+        #caughtCount {
             font-size: 1.5rem;
             margin-top: 10px;
         }
@@ -96,67 +98,6 @@
             border: 2px solid #333;
             overflow: hidden;
         }
-
-        .explosion {
-            background-image: url('https://media.giphy.com/media/l0ExvKfWKeCp0/giphy.gif');
-            background-size: cover;
-        }
-
-        /* Color Styling based on mode */
-        .light-mode #ballot {
-            background-color: blue;
-        }
-
-        .dark-mode #ballot {
-            background-color: red;
-        }
-
-        /* Leaderboard Styling */
-        #leaderboard {
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        #leaderboard ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        #leaderboard li {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
-
-        /* Rules Section Styling */
-        #rules {
-            margin-top: 50px;
-            padding: 20px;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            text-align: left;
-        }
-
-        #rules h3 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        #rules ol {
-            font-size: 1.2rem;
-            color: #333;
-            padding-left: 20px;
-        }
-
-        #rules ol li {
-            margin-bottom: 10px;
-        }
-
-        .dark-mode #rules {
-            background-color: #2b2b2b;
-            color: #e0e0e0;
-        }
-
     </style>
 </head>
 <body class="dark-mode"> <!-- Starts in dark mode by default -->
@@ -164,7 +105,6 @@
         <h1>Countdown to Election Day: November 5, 2024, 8:00 PM (Central Time)</h1>
         <div id="countdown"></div>
         <button id="toggleMode" class="btn btn-toggle mt-3">Toggle Light Mode</button>
-        <button id="startGame" class="btn btn-start mt-3">Start Game</button>
 
         <!-- Game Elements -->
         <div class="game-container">
@@ -172,87 +112,15 @@
         </div>
         <div id="lives">Lives: 3</div>
         <div id="caughtCount">Caught: 0</div>
-        <div id="timer">Time Left: 5s</div>
         <div id="gameOver">Game Over!</div>
-
-        <!-- Leaderboard -->
-        <div id="leaderboard">
-            <h3>Leaderboard</h3>
-            <ul id="highScoresList"></ul>
-        </div>
-
-        <!-- Rules Section -->
-        <div id="rules">
-            <h3>Rules for the "Mail-In Ballot Blitz"</h3>
-            <ol>
-                <li><strong>The Goal:</strong> Catch as many mail-in ballots as you can before time runs out, or you run out of lives. You can’t let democracy slip through your fingers!</li>
-                <li><strong>Time Waits for No One:</strong> Each round gets shorter, just like election cycles. Move fast or you'll miss your chance to cast your vote!</li>
-                <li><strong>Lives Matter:</strong> You get 3 chances, just like three terms in office… except we’ll keep track if you drop the ball(ot)!</li>
-                <li><strong>Click Wisely:</strong> Clicking the ballot will make it explode in a glorious display of civic duty. But miss three times, and you're out of the game.</li>
-                <li><strong>It’s Only Going to Get Harder:</strong> The ballots start slow, but just like real life, the pressure builds. Ballots will fly faster than political ads during election season!</li>
-                <li><strong>The Leaderboard:</strong> The top players are basically running for office. Submit your high score to prove you have what it takes to win in this chaotic democratic process.</li>
-                <li><strong>No Ballot Stuffing:</strong> Play fair! Your clicks count, but only the best catchers will make the leaderboard.</li>
-                <li><strong>No Hanging Chads:</strong> Make sure your clicks land cleanly! We don’t want any confusing recounts.</li>
-            </ol>
-        </div>
     </div>
 
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyA3WF6LLlZfT_uJpfGtmKUmiYXGE9QnAnw",
-            authDomain: "ballotchase-ef4d9.firebaseapp.com",
-            projectId: "ballotchase-ef4d9",
-            storageBucket: "ballotchase-ef4d9.appspot.com",
-            messagingSenderId: "1073466108439",
-            appId: "1:1073466108439:web:0c1f17cb96fdc539650a52"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // Submit High Score to Firebase
-        function submitHighScore(name, score) {
-            const scoreRef = db.ref('leaderboard/').push();
-            scoreRef.set({
-                name: name,
-                score: score
-            });
-        }
-
-        // Retrieve and Display High Scores
-        function loadHighScores() {
-            const scoresRef = db.ref('leaderboard/').orderByChild('score').limitToLast(10);
-            scoresRef.on('value', (snapshot) => {
-                const highScores = snapshot.val();
-                const highScoresList = document.getElementById('highScoresList');
-                highScoresList.innerHTML = ''; // Clear the list
-                const scoresArray = Object.values(highScores || {}).sort((a, b) => b.score - a.score);
-                scoresArray.forEach(scoreEntry => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = `${scoreEntry.name}: ${scoreEntry.score}`;
-                    highScoresList.appendChild(listItem);
-                });
-            });
-        }
-
-        // Load high scores when the page loads
-        window.onload = function() {
-            loadHighScores();
-        }
-
-        // Countdown Timer
+        // Countdown function
         function updateCountdown() {
             const eventDate = new Date("November 5, 2024 20:00:00 GMT-0600"); // Central Time
             const now = new Date();
             const timeRemaining = eventDate - now;
-
-            if (timeRemaining < 0) {
-                clearInterval(countdownInterval);
-                document.getElementById("countdown").innerHTML = "Election Day is here!";
-                return;
-            }
 
             const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
             const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -260,142 +128,17 @@
             const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
 
             document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+            if (timeRemaining < 0) {
+                clearInterval(countdownInterval);
+                document.getElementById("countdown").innerHTML = "Election Day is here!";
+            }
         }
 
+        // Update the countdown every second
         const countdownInterval = setInterval(updateCountdown, 1000);
 
-        // Game Variables
-        let lives = 3;
-        let caught = 0;
-        let timeLeft = 5;
-        let xVelocity = 3;
-        let yVelocity = 2;
-        let gameInterval;
-        let countdownTimer;
-
-        const ballot = document.getElementById('ballot');
-        const livesDisplay = document.getElementById('lives');
-        const caughtDisplay = document.getElementById('caughtCount');
-        const timerDisplay = document.getElementById('timer');
-        const gameOverDisplay = document.getElementById('gameOver');
-        const startGameButton = document.getElementById('startGame');
-        const gameContainer = document.querySelector('.game-container');
-
-        let containerWidth, containerHeight, ballotX, ballotY;
-
-        // Initialize Ballot Position
-        function initializeBallotPosition() {
-            containerWidth = gameContainer.offsetWidth;
-            containerHeight = gameContainer.offsetHeight;
-            ballotX = Math.random() * (containerWidth - ballot.offsetWidth);
-            ballotY = Math.random() * (containerHeight - ballot.offsetHeight);
-        }
-
-        // Start Game
-        function startGame() {
-            lives = 3;
-            caught = 0;
-            timeLeft = 5;
-            xVelocity = 3;
-            yVelocity = 2;
-            initializeBallotPosition();
-
-            livesDisplay.innerText = `Lives: ${lives}`;
-            caughtDisplay.innerText = `Caught: ${caught}`;
-            timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-            gameOverDisplay.style.display = 'none';
-
-            ballot.style.display = 'block';
-            moveBallot();
-            startCountdown();
-
-            startGameButton.disabled = true;
-        }
-
-        // Move Ballot
-        function moveBallot() {
-            gameInterval = setInterval(function () {
-                ballotX += xVelocity;
-                ballotY += yVelocity;
-
-                if (ballotX <= 0 || ballotX + ballot.offsetWidth >= containerWidth) {
-                    xVelocity = -xVelocity;
-                }
-                if (ballotY <= 0 || ballotY + ballot.offsetHeight >= containerHeight) {
-                    yVelocity = -yVelocity;
-                }
-
-                ballot.style.left = ballotX + 'px';
-                ballot.style.top = ballotY + 'px';
-            }, 20);
-        }
-
-        // Start Countdown for Ballot Catching
-        function startCountdown() {
-            clearInterval(countdownTimer);
-            countdownTimer = setInterval(function () {
-                timeLeft--;
-                timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-
-                if (timeLeft === 0) {
-                    clearInterval(countdownTimer);
-                    loseLife();
-                }
-            }, 1000);
-        }
-
-        // Ballot Click Event
-        ballot.addEventListener('click', function () {
-            caught++;
-            timeLeft = Math.max(3, timeLeft - 0.5); // Decrease the time
-            xVelocity *= 1.1;
-            yVelocity *= 1.1;
-
-            caughtDisplay.innerText = `Caught: ${caught}`;
-            timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-
-            resetBallot();
-        });
-
-        // Reset Ballot Position
-        function resetBallot() {
-            clearInterval(countdownTimer);
-            clearInterval(gameInterval);
-            initializeBallotPosition();
-            moveBallot();
-            startCountdown();
-        }
-
-        // Lose Life
-        function loseLife() {
-            lives--;
-            livesDisplay.innerText = `Lives: ${lives}`;
-            if (lives === 0) {
-                gameOver();
-            } else {
-                resetBallot();
-            }
-        }
-
-        // Game Over
-        function gameOver() {
-            clearInterval(gameInterval);
-            clearInterval(countdownTimer);
-            ballot.style.display = 'none';
-            gameOverDisplay.style.display = 'block';
-            startGameButton.disabled = false;
-
-            // Submit Score
-            const playerName = prompt("Game Over! Enter your name for the leaderboard:");
-            if (playerName) {
-                submitHighScore(playerName, caught);
-            }
-        }
-
-        // Start Game Button Click Handler
-        startGameButton.addEventListener('click', startGame);
-
-        // Toggle Dark/Light Mode
+        // Dark mode toggle
         const toggleModeButton = document.getElementById("toggleMode");
         toggleModeButton.addEventListener("click", function () {
             const body = document.body;
@@ -409,9 +152,85 @@
                 toggleModeButton.textContent = 'Toggle Dark Mode';
             }
         });
+
+        // Game logic
+        let lives = 3;
+        let caught = 0;
+        let speed = 2000;
+        let xVelocity = 3; // Horizontal velocity
+        let yVelocity = 2; // Vertical velocity
+
+        const ballot = document.getElementById('ballot');
+        const livesDisplay = document.getElementById('lives');
+        const caughtDisplay = document.getElementById('caughtCount');
+        const gameOverDisplay = document.getElementById('gameOver');
+        const gameContainer = document.querySelector('.game-container');
+
+        const containerWidth = gameContainer.offsetWidth;
+        const containerHeight = gameContainer.offsetHeight;
+
+        let ballotX = Math.random() * (containerWidth - ballot.offsetWidth);
+        let ballotY = Math.random() * (containerHeight - ballot.offsetHeight);
+
+        function startGame() {
+            lives = 3;
+            caught = 0;
+            speed = 2000;
+            xVelocity = 3;
+            yVelocity = 2;
+            livesDisplay.innerText = `Lives: ${lives}`;
+            caughtDisplay.innerText = `Caught: ${caught}`;
+            gameOverDisplay.style.display = 'none';
+            ballot.style.display = 'block';
+            moveBallot();
+        }
+
+        function moveBallot() {
+            const moveInterval = setInterval(function () {
+                ballotX += xVelocity;
+                ballotY += yVelocity;
+
+                if (ballotX <= 0 || ballotX + ballot.offsetWidth >= containerWidth) {
+                    xVelocity = -xVelocity;
+                }
+                if (ballotY <= 0 || ballotY + ballot.offsetHeight >= containerHeight) {
+                    yVelocity = -yVelocity;
+                }
+
+                ballot.style.left = ballotX + 'px';
+                ballot.style.top = ballotY + 'px';
+
+                // Check if the game is over
+                if (lives === 0) {
+                    clearInterval(moveInterval);
+                    gameOver();
+                }
+            }, 20);
+        }
+
+        ballot.addEventListener('click', function () {
+            caught++;
+            caughtDisplay.innerText = `Caught: ${caught}`;
+            speed *= 0.9; // Increase speed
+            xVelocity *= 1.1; // Increase horizontal speed
+            yVelocity *= 1.1; // Increase vertical speed
+        });
+
+        function loseLife() {
+            lives--;
+            livesDisplay.innerText = `Lives: ${lives}`;
+        }
+
+        function gameOver() {
+            ballot.style.display = 'none';
+            gameOverDisplay.style.display = 'block';
+        }
+
+        // Start game when the page loads
+        window.onload = startGame;
     </script>
 
     <!-- Bootstrap 5 JS (Local) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./bootstrap.bundle.min.js"></script>
 </body>
 </html>
