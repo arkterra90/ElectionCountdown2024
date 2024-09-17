@@ -1,3 +1,23 @@
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyA3WF6LLlZfT_uJpfGtmKUmiYXGE9QnAnw",
+    authDomain: "ballotchase-ef4d9.firebaseapp.com",
+    databaseURL: "https://ballotchase-ef4d9-default-rtdb.firebaseio.com",
+    projectId: "ballotchase-ef4d9",
+    storageBucket: "ballotchase-ef4d9.appspot.com",
+    messagingSenderId: "1073466108439",
+    appId: "1:1073466108439:web:0c1f17cb96fdc539650a52"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const leaderboardRef = ref(db, 'leaderboard');
+
 // Dark mode toggle
 const toggleModeButton = document.getElementById("toggleMode");
 toggleModeButton.addEventListener("click", function () {
@@ -139,7 +159,7 @@ function loseLife() {
     }
 }
 
-// End the game
+// End the game and submit the score
 function gameOver() {
     gameInProgress = false; // Set the game state to not active
     clearInterval(gameInterval);
@@ -147,7 +167,51 @@ function gameOver() {
     ballot.style.display = 'none';
     gameOverDisplay.style.display = 'block';
     startGameButton.disabled = false;
+
+    const playerName = prompt("Game Over! Enter your name for the leaderboard:");
+    if (playerName) {
+        submitScore(playerName, caught); // Submit score to Firebase
+    }
+
+    loadLeaderboard(); // Reload the leaderboard
 }
+
+// Function to submit score to Firebase
+function submitScore(playerName, score) {
+    push(leaderboardRef, {
+        name: playerName,
+        score: score,
+        timestamp: Date.now()
+    });
+}
+
+// Function to retrieve leaderboard data from Firebase
+function loadLeaderboard() {
+    const leaderboardQuery = query(leaderboardRef, orderByChild('score'), limitToLast(10));
+    onValue(leaderboardQuery, (snapshot) => {
+        const leaderboardList = document.getElementById('leaderboard-list');
+        leaderboardList.innerHTML = ''; // Clear previous leaderboard data
+
+        const scores = [];
+        snapshot.forEach((childSnapshot) => {
+            const data = childSnapshot.val();
+            scores.push(data);
+        });
+
+        scores.sort((a, b) => b.score - a.score); // Sort in descending order
+
+        // Display top scores
+        scores.forEach((entry) => {
+            const li = document.createElement('li');
+            li.classList.add('list-group-item');
+            li.textContent = `${entry.name}: ${entry.score}`;
+            leaderboardList.appendChild(li);
+        });
+    });
+}
+
+// Load leaderboard on page load
+window.addEventListener('load', loadLeaderboard);
 
 // Start game button click handler
 startGameButton.addEventListener('click', startGame);
