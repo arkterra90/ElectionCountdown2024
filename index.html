@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Election Countdown: Nov 5</title>
+    <title>Ballot Blitz</title>
 
     <!-- Bootstrap 5 CSS (Local) -->
     <link href="./bootstrap.min.css" rel="stylesheet">
-
-    <!-- Google Fonts (Inter) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
         body.light-mode {
@@ -21,7 +18,7 @@
             color: #e0e0e0;
         }
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -53,6 +50,7 @@
             color: white;
             border: none;
             transition: background-color 0.3s;
+            cursor: pointer;
         }
 
         .btn-toggle:hover, .btn-start:hover {
@@ -71,6 +69,13 @@
             border: 2px solid black;
             cursor: pointer;
             display: none;
+            background-color: blue; /* Default for light mode */
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-radius: 8px;
         }
 
         #lives, #caughtCount, #timer {
@@ -91,11 +96,15 @@
             margin-top: 30px;
             border: 2px solid #333;
             overflow: hidden;
+            border-radius: 8px;
+            background-color: #f0f0f0;
         }
 
         .explosion {
             background-image: url('https://media.giphy.com/media/l0ExvKfWKeCp0/giphy.gif');
             background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         /* Color Styling based on mode */
@@ -117,7 +126,7 @@
 
         <!-- Game Elements -->
         <div class="game-container">
-            <div id="ballot">Mail-in Ballot</div>
+            <div id="ballot">Ballot</div>
         </div>
         <div id="lives">Lives: 3</div>
         <div id="caughtCount">Caught: 0</div>
@@ -125,176 +134,9 @@
         <div id="gameOver">Game Over!</div>
     </div>
 
-    <script>
-        // Countdown function for Election Day
-        function updateCountdown() {
-            const eventDate = new Date("November 5, 2024 20:00:00 GMT-0600"); // Central Time
-            const now = new Date();
-            const timeRemaining = eventDate - now;
-
-            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-
-            document.getElementById("countdown").innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-
-            if (timeRemaining < 0) {
-                clearInterval(countdownInterval);
-                document.getElementById("countdown").innerHTML = "Election Day is here!";
-            }
-        }
-
-        // Update the countdown every second
-        const countdownInterval = setInterval(updateCountdown, 1000);
-
-        // Dark mode toggle
-        const toggleModeButton = document.getElementById("toggleMode");
-        toggleModeButton.addEventListener("click", function () {
-            const body = document.body;
-            if (body.classList.contains("light-mode")) {
-                body.classList.remove("light-mode");
-                body.classList.add("dark-mode");
-                toggleModeButton.textContent = 'Toggle Light Mode';
-            } else {
-                body.classList.remove("dark-mode");
-                body.classList.add("light-mode");
-                toggleModeButton.textContent = 'Toggle Dark Mode';
-            }
-        });
-
-        // Game logic
-        let lives = 3;
-        let caught = 0;
-        let timeLeft = 5; // Initial countdown time
-        let xVelocity = 3;
-        let yVelocity = 2;
-        let gameInterval;
-        let countdownTimer;
-
-        const ballot = document.getElementById('ballot');
-        const livesDisplay = document.getElementById('lives');
-        const caughtDisplay = document.getElementById('caughtCount');
-        const timerDisplay = document.getElementById('timer');
-        const gameOverDisplay = document.getElementById('gameOver');
-        const startGameButton = document.getElementById('startGame');
-        const gameContainer = document.querySelector('.game-container');
-
-        let containerWidth, containerHeight, ballotX, ballotY;
-
-        function initializeBallotPosition() {
-            containerWidth = gameContainer.offsetWidth;
-            containerHeight = gameContainer.offsetHeight;
-            ballotX = Math.random() * (containerWidth - ballot.offsetWidth);
-            ballotY = Math.random() * (containerHeight - ballot.offsetHeight);
-        }
-
-        // Game start
-        function startGame() {
-            lives = 3;
-            caught = 0;
-            timeLeft = 5;
-            xVelocity = 3;
-            yVelocity = 2;
-            initializeBallotPosition();
-
-            livesDisplay.innerText = `Lives: ${lives}`;
-            caughtDisplay.innerText = `Caught: ${caught}`;
-            timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-            gameOverDisplay.style.display = 'none';
-
-            ballot.style.display = 'block';
-            ballot.classList.remove('explosion');
-            moveBallot();
-            startCountdown();
-
-            startGameButton.disabled = true;
-        }
-
-        // Move the ballot around within the game container
-        function moveBallot() {
-            gameInterval = setInterval(function () {
-                ballotX += xVelocity;
-                ballotY += yVelocity;
-
-                if (ballotX <= 0 || ballotX + ballot.offsetWidth >= containerWidth) {
-                    xVelocity = -xVelocity;
-                }
-                if (ballotY <= 0 || ballotY + ballot.offsetHeight >= containerHeight) {
-                    yVelocity = -yVelocity;
-                }
-
-                ballot.style.left = ballotX + 'px';
-                ballot.style.top = ballotY + 'px';
-            }, 20);
-        }
-
-        // Timer countdown for the current ballot
-        function startCountdown() {
-            clearInterval(countdownTimer);
-            countdownTimer = setInterval(function () {
-                timeLeft--;
-                timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-
-                if (timeLeft === 0) {
-                    clearInterval(countdownTimer);
-                    loseLife();
-                }
-            }, 1000);
-        }
-
-        // Ballot click event
-        ballot.addEventListener('click', function () {
-            caught++;
-            timeLeft = Math.max(3, timeLeft - 0.5); // Decrease time, but not below 3 seconds
-            xVelocity *= 1.1;
-            yVelocity *= 1.1;
-
-            caughtDisplay.innerText = `Caught: ${caught}`;
-            timerDisplay.innerText = `Time Left: ${timeLeft}s`;
-
-            // Explosion effect
-            ballot.classList.add('explosion');
-            setTimeout(function () {
-                ballot.classList.remove('explosion');
-                resetBallot();
-            }, 500);
-        });
-
-        // Reset the ballot to a new random position
-        function resetBallot() {
-            clearInterval(countdownTimer);
-            clearInterval(gameInterval);
-            initializeBallotPosition();
-            moveBallot();
-            startCountdown();
-        }
-
-        // Lose a life
-        function loseLife() {
-            lives--;
-            livesDisplay.innerText = `Lives: ${lives}`;
-            if (lives === 0) {
-                gameOver();
-            } else {
-                resetBallot();
-            }
-        }
-
-        // End the game
-        function gameOver() {
-            clearInterval(gameInterval);
-            clearInterval(countdownTimer);
-            ballot.style.display = 'none';
-            gameOverDisplay.style.display = 'block';
-            startGameButton.disabled = false;
-        }
-
-        // Start game button click handler
-        startGameButton.addEventListener('click', startGame);
-
-    </script>
-
+    <!-- Link to JavaScript files -->
+    <script src="./countdown.js"></script>
+    <script src="./game.js"></script>
     <!-- Bootstrap 5 JS (Local) -->
     <script src="./bootstrap.bundle.min.js"></script>
 </body>
